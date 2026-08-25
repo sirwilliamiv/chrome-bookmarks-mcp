@@ -1,0 +1,265 @@
+/*
+ * Host style variables when the host provides them, self-contained fallbacks
+ * otherwise. Every token is defined on bare :root first.
+ */
+:root {
+  --bg: var(--color-background-primary, #ffffff);
+  --bg-soft: var(--color-background-secondary, #f6f7f9);
+  --bg-hover: var(--color-background-tertiary, #eceef2);
+  --fg: var(--color-text-primary, #16181d);
+  --fg-soft: var(--color-text-secondary, #5c6370);
+  --fg-faint: var(--color-text-tertiary, #868d9b);
+  --border: var(--color-border-primary, #e0e3e9);
+  --accent: var(--color-background-info, #2a67d4);
+  --danger: var(--color-text-danger, #b4232c);
+  --danger-bg: var(--color-background-danger, #fdeced);
+  --ok: var(--color-text-success, #1a7f47);
+  color-scheme: light dark;
+}
+
+:root[data-theme='dark'] {
+  --bg: var(--color-background-primary, #16181d);
+  --bg-soft: var(--color-background-secondary, #1e2127);
+  --bg-hover: var(--color-background-tertiary, #272b33);
+  --fg: var(--color-text-primary, #e8eaee);
+  --fg-soft: var(--color-text-secondary, #9aa2b1);
+  --fg-faint: var(--color-text-tertiary, #6f7788);
+  --border: var(--color-border-primary, #2e323b);
+  --accent: var(--color-background-info, #6c9bf0);
+  --danger: var(--color-text-danger, #ef7a80);
+  --danger-bg: var(--color-background-danger, #3a1f22);
+  --ok: var(--color-text-success, #4ec98a);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+.wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 18px 16px 96px;
+}
+
+.head h1 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 650;
+}
+
+.head p {
+  margin: 4px 0 0;
+  color: var(--fg-soft);
+  font-size: 13px;
+}
+
+.counts {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--fg) !important;
+}
+
+.errors {
+  margin: 14px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--danger);
+  border-radius: 9px;
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-size: 13px;
+}
+
+.errors ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.hidden {
+  display: none;
+}
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.group {
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  overflow: hidden;
+}
+
+.group-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: var(--bg-soft);
+  border-bottom: 1px solid var(--border);
+}
+
+.group-label {
+  flex: 1 1 auto;
+  font-weight: 620;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.group.delete .group-label {
+  color: var(--danger);
+}
+
+.group-count {
+  color: var(--fg-faint);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.group-toggle {
+  padding: 4px 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg);
+  color: var(--fg-soft);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.group-toggle:hover {
+  background: var(--bg-hover);
+  color: var(--fg);
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.row:first-of-type {
+  border-top: 0;
+}
+
+.row:hover {
+  background: var(--bg-soft);
+}
+
+.row.rejected {
+  opacity: 0.42;
+}
+
+.row input {
+  margin-top: 3px;
+  accent-color: var(--accent);
+  flex: 0 0 auto;
+}
+
+.row-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.row-title {
+  font-weight: 520;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row-path {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 11.5px;
+}
+
+.chip {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--bg-hover);
+  color: var(--fg-soft);
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip.to {
+  color: var(--fg);
+  font-weight: 560;
+}
+
+.arrow {
+  color: var(--fg-faint);
+}
+
+.row-detail {
+  color: var(--fg-soft);
+  font-size: 12px;
+}
+
+.empty {
+  color: var(--fg-faint);
+  font-size: 13px;
+}
+
+.foot {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+
+.status {
+  flex: 1 1 auto;
+  font-size: 12.5px;
+  color: var(--fg-soft);
+}
+
+.status.failed {
+  color: var(--danger);
+}
+
+.status.done {
+  color: var(--ok);
+}
+
+.apply {
+  padding: 9px 18px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--fg);
+  color: var(--bg);
+  font: inherit;
+  font-weight: 640;
+  cursor: pointer;
+}
+
+.apply:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

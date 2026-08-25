@@ -1,0 +1,106 @@
+{
+  "checksum": "0000000000000000000000000000dead",
+  "version": 1,
+  "roots": {
+    "bookmark_bar": {
+      "id": "1",
+      "guid": "00000000-0000-4000-a000-000000000001",
+      "name": "Bookmarks bar",
+      "type": "folder",
+      "date_added": "13079403021286781",
+      "children": [
+        {
+          "id": "10",
+          "guid": "00000000-0000-4000-a000-000000000010",
+          "name": "Rust",
+          "type": "url",
+          "url": "https://rust-lang.org",
+          "date_added": "13079403021286781"
+        },
+        {
+          "id": "11",
+          "guid": "00000000-0000-4000-a000-000000000011",
+          "name": "Café résumé",
+          "type": "url",
+          "url": "https://example.com/cafe",
+          "date_added": "13100000000000000"
+        },
+        {
+          "id": "2",
+          "guid": "00000000-0000-4000-a000-000000000002",
+          "name": "Dev",
+          "type": "folder",
+          "date_added": "13079403021286781",
+          "children": [
+            {
+              "id": "12",
+              "guid": "00000000-0000-4000-a000-000000000012",
+              "name": "Rust by Example",
+              "type": "url",
+              "url": "https://doc.rust-lang.org/rust-by-example/",
+              "date_added": "13110000000000000"
+            },
+            {
+              "id": "13",
+              "guid": "00000000-0000-4000-a000-000000000013",
+              "name": "Shared Article",
+              "type": "url",
+              "url": "https://dupe.example.com/page",
+              "date_added": "13100000000000000"
+            },
+            {
+              "id": "3",
+              "guid": "00000000-0000-4000-a000-000000000003",
+              "name": "Rust",
+              "type": "folder",
+              "date_added": "13079403021286781",
+              "children": [
+                {
+                  "id": "14",
+                  "guid": "00000000-0000-4000-a000-000000000014",
+                  "name": "The Book",
+                  "type": "url",
+                  "url": "https://doc.rust-lang.org/book/",
+                  "date_added": "13120000000000000"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "other": {
+      "id": "4",
+      "guid": "00000000-0000-4000-a000-000000000004",
+      "name": "Other bookmarks",
+      "type": "folder",
+      "date_added": "13079403021286781",
+      "children": [
+        {
+          "id": "15",
+          "guid": "00000000-0000-4000-a000-000000000015",
+          "name": "Shared Article (copy)",
+          "type": "url",
+          "url": "https://www.dupe.example.com/page/?utm_source=newsletter#intro",
+          "date_added": "13130000000000000"
+        },
+        {
+          "id": "16",
+          "guid": "00000000-0000-4000-a000-000000000016",
+          "name": "Gone Forever",
+          "type": "url",
+          "url": "https://dead.example.com/",
+          "date_added": "13140000000000000"
+        }
+      ]
+    },
+    "synced": {
+      "id": "5",
+      "guid": "00000000-0000-4000-a000-000000000005",
+      "name": "Mobile bookmarks",
+      "type": "folder",
+      "date_added": "13079403021286781",
+      "children": []
+    }
+  }
+}

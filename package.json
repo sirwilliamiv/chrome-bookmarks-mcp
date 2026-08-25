@@ -1,0 +1,28 @@
+{
+  "name": "chrome-bookmarks-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "MCP server for searching and reorganizing Chrome bookmarks",
+  "scripts": {
+    "build": "pnpm build:views && tsc -p tsconfig.json",
+    "build:views": "node views/build.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p views/tsconfig.json",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^4.2.0",
+    "@modelcontextprotocol/ext-apps": "^1.7.5",
+    "@modelcontextprotocol/server": "^2.0.0",
+    "ws": "^8.21.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.3.0",
+    "@types/ws": "^8.18.1",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
+  }
+}
