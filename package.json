@@ -8,10 +8,11 @@
     "build": "pnpm build:views && tsc -p tsconfig.json",
     "build:views": "node views/build.mjs",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p views/tsconfig.json"
   },
   "dependencies": {
     "@huggingface/transformers": "^4.2.0",
+    "@modelcontextprotocol/ext-apps": "^1.7.5",
     "@modelcontextprotocol/server": "^2.0.0",
     "ws": "^8.21.3",
     "zod": "^4.4.3"
