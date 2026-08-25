@@ -6,10 +6,10 @@
     "strict": true,
     "exactOptionalPropertyTypes": true,
     "outDir": "dist",
-    "rootDir": ".",
+    "rootDir": "src",
     "skipLibCheck": true,
     "allowJs": true,
     "resolveJsonModule": true
   },
-  "include": ["src", "extension/apply-ops.js"]
+  "include": ["src"]
 }
