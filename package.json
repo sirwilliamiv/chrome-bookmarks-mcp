@@ -9,7 +9,9 @@
     "build:views": "node views/build.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit && tsc --noEmit -p views/tsconfig.json",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "smoke:shared": "node scripts/smoke-shared.mjs",
+    "daemon": "node scripts/daemon.mjs"
   },
   "dependencies": {
     "@huggingface/transformers": "^4.2.0",

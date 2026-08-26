@@ -31,9 +31,41 @@ pnpm build
 
 ### 2. Register the server
 
+Both Claude Code and Claude Desktop point at `proxy.js`, a featherweight stdio
+front end. Every client forwards to one shared daemon, so there is exactly one
+bookmark index and one Chrome extension connection no matter how many clients
+are open. The first client to start brings the daemon up automatically.
+
+Claude Code:
+
 ```bash
-claude mcp add chrome-bookmarks -- node /Users/b/Desktop/code/chrome-bookmarks-mcp/dist/server/index.js
+claude mcp add -s user chrome-bookmarks -- \
+  /Users/b/.nvm/versions/node/v22.22.0/bin/node \
+  /Users/b/Desktop/code/chrome-bookmarks-mcp/dist/server/proxy.js
 ```
+
+Claude Desktop, in `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "chrome-bookmarks": {
+      "command": "/Users/b/.nvm/versions/node/v22.22.0/bin/node",
+      "args": ["/Users/b/Desktop/code/chrome-bookmarks-mcp/dist/server/proxy.js"]
+    }
+  }
+}
+```
+
+Use the absolute node path. Claude Desktop does not inherit your shell PATH, so
+a bare `node` will not resolve.
+
+Then restart the client. Quit Claude Desktop fully with Command-Q, not just the
+window.
+
+`dist/server/index.js` is still there as a standalone stdio server that owns its
+own bridge. It is fine when only one client will ever run, but two copies of it
+fight over the bridge port. Prefer the proxy.
 
 ### 3. Load the companion extension
 
@@ -103,15 +135,25 @@ Bulk edits to two thousand bookmarks are exactly where this could hurt, so:
 | --- | --- | --- |
 | `CHROME_BOOKMARKS_PATH` | `~/Library/Application Support/Google/Chrome/Default/Bookmarks` | Which profile to read |
 | `CHROME_BOOKMARKS_MCP_PORT` | `45732` | Bridge port, must match the extension options |
+| `CHROME_BOOKMARKS_MCP_HTTP_PORT` | `45731` | Port the shared daemon serves MCP on |
 | `CHROME_BOOKMARKS_MCP_HOME` | `~/.chrome-bookmarks-mcp` | Token, embeddings cache, backups, undo record |
 
 ## Development
 
 ```bash
-pnpm test           # unit tests
-pnpm typecheck      # server and views
-pnpm build          # views then server
-node scripts/smoke.mjs   # end to end against the real bookmarks file
+pnpm test                      # unit tests
+pnpm typecheck                 # server and views
+pnpm build                     # views then server
+node scripts/smoke.mjs         # end to end, standalone stdio server
+node scripts/smoke-shared.mjs  # end to end, two clients against one daemon
+```
+
+Daemon control, only needed to inspect or recycle it:
+
+```bash
+node scripts/daemon.mjs status
+node scripts/daemon.mjs restart
+node scripts/daemon.mjs logs
 ```
 
 The first semantic search downloads a 25MB model and embeds the whole library,
@@ -123,6 +165,8 @@ are a few milliseconds.
 
 ```
 src/server/      MCP server: parser, search, plans, bridge, tools
+                 core.ts builds it, daemon.ts is the shared instance,
+                 proxy.ts is the per-client stdio front end
 src/shared/      Protocol types shared with the extension
 extension/       MV3 companion extension, applies op batches via chrome.bookmarks
 views/src/       MCP App views, bundled to single self-contained HTML files

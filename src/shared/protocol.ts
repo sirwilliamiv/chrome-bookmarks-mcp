@@ -1,6 +1,9 @@
 import type { Op } from '../server/plan.js';
 
 export const DEFAULT_PORT = 45732;
+/** Shared daemon's MCP-over-HTTP port. */
+export const DEFAULT_HTTP_PORT = 45731;
+export const MCP_PATH = '/mcp';
 
 export interface AppliedOp {
   tempId?: string;

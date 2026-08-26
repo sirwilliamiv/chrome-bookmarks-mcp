@@ -1,15 +1,14 @@
-import { McpServer } from '@modelcontextprotocol/server';
 import { serveStdio } from '@modelcontextprotocol/server/stdio';
-import { BookmarksSource } from './bookmarks-file.js';
-import { FuzzyRanker } from './search/fuzzy.js';
-import { SemanticRanker } from './search/semantic.js';
-import { HybridRanker } from './search/hybrid.js';
-import { statePath } from './paths.js';
-import { registerReadTools } from './tools-read.js';
-import { registerWriteTools } from './tools-write.js';
-import { registerViews } from './views.js';
 import { Bridge, getOrCreateToken } from './bridge.js';
+import { createBookmarksServer, createDeps } from './core.js';
 import { DEFAULT_PORT } from '../shared/protocol.js';
+
+/**
+ * Standalone stdio server: one process per client, owning its own bridge.
+ * Fine when only one MCP client is running. When Claude Code and Claude
+ * Desktop are both open, use proxy.js instead so they share one daemon and one
+ * extension connection.
+ */
 
 const port = Number(process.env.CHROME_BOOKMARKS_MCP_PORT) || DEFAULT_PORT;
 const token = getOrCreateToken();
@@ -27,22 +26,11 @@ bridge.start().then(
   err => {
     console.error(
       `[chrome-bookmarks-mcp] bridge could not listen on port ${port}: ${err.message}. ` +
-        `Reads still work, writes will fail. Set CHROME_BOOKMARKS_MCP_PORT to use another port.`
+        `Another instance probably owns it. Reads still work, writes will fail. ` +
+        `Point this client at dist/server/proxy.js to share the running instance instead.`
     );
   }
 );
 
-serveStdio(() => {
-  const server = new McpServer({ name: 'chrome-bookmarks', version: '0.1.0' });
-
-  const source = new BookmarksSource();
-  const fuzzy = new FuzzyRanker();
-  const semantic = new SemanticRanker(statePath('embeddings.json'));
-  const hybrid = new HybridRanker(fuzzy, semantic);
-
-  registerViews(server);
-  registerReadTools(server, { source, fuzzy, semantic, hybrid });
-  registerWriteTools(server, { source, bridge });
-
-  return server;
-});
+const deps = createDeps(bridge);
+serveStdio(() => createBookmarksServer(deps));
