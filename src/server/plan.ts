@@ -92,6 +92,13 @@ export function validatePlan(plan: Plan, index: BookmarkIndex): ValidationResult
     if (!index.byId.has(id)) errors.push(`op ${at}: bookmark ${id} does not exist`);
   };
 
+  // Moves may target a folder as well as a bookmark; Chrome moves either.
+  const checkMovable = (id: string, at: number) => {
+    if (!index.byId.has(id) && !index.folderById.has(id)) {
+      errors.push(`op ${at}: bookmark or folder ${id} does not exist`);
+    }
+  };
+
   plan.ops.forEach((op, at) => {
     switch (op.op) {
       case 'create_folder':
@@ -101,7 +108,7 @@ export function validatePlan(plan: Plan, index: BookmarkIndex): ValidationResult
         created.add(op.tempId);
         break;
       case 'move':
-        checkBookmark(op.id, at);
+        checkMovable(op.id, at);
         checkParent(op.parentId, at);
         break;
       case 'update':
@@ -133,8 +140,8 @@ export function inverseOps(plan: Plan, index: BookmarkIndex): Op[] {
   for (const op of plan.ops) {
     switch (op.op) {
       case 'move': {
-        const before = index.byId.get(op.id);
-        if (!before) break;
+        const before = index.byId.get(op.id) ?? index.folderById.get(op.id);
+        if (!before || before.parentId === null) break;
         inverse.push({ op: 'move', id: op.id, parentId: before.parentId, index: before.index });
         break;
       }
@@ -206,15 +213,18 @@ export function planToRows(plan: Plan, index: BookmarkIndex): PlanRow[] {
       }
       case 'move': {
         const before = index.byId.get(op.id);
+        const folder = before ? undefined : index.folderById.get(op.id);
         const row: PlanRow = {
           kind: 'move',
           id: op.id,
-          title: before?.title ?? op.id,
+          title: before?.title ?? folder?.title ?? op.id,
           to: resolvePath(op.parentId, index, pendingFolders)
         };
         if (before) {
           row.url = before.url;
           row.from = before.folderPath;
+        } else if (folder && folder.parentId !== null) {
+          row.from = index.folderById.get(folder.parentId)?.folderPath ?? folder.parentId;
         }
         rows.push(row);
         break;

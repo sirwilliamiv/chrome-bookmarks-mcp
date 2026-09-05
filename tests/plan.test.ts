@@ -25,6 +25,27 @@ describe('validatePlan', () => {
     if (!result.ok) expect(result.errors.join(' ')).toContain('nope');
   });
 
+  it('accepts a move of a folder and inverts it to its original parent and index', () => {
+    const parentFolder = index.folderById.get(devFolder.parentId!)!;
+    const result = validatePlan(
+      { id: 'p1', ops: [{ op: 'move', id: devFolder.id, parentId: parentFolder.id, index: 0 }] },
+      index
+    );
+    expect(result.ok).toBe(true);
+    const inverse = inverseOps(
+      { id: 'p1', ops: [{ op: 'move', id: devFolder.id, parentId: parentFolder.id, index: 0 }] },
+      index
+    );
+    expect(inverse).toEqual([
+      { op: 'move', id: devFolder.id, parentId: devFolder.parentId, index: devFolder.index }
+    ]);
+    const rows = planToRows(
+      { id: 'p1', ops: [{ op: 'move', id: devFolder.id, parentId: parentFolder.id, index: 0 }] },
+      index
+    );
+    expect(rows[0]).toMatchObject({ kind: 'move', title: 'Dev', from: parentFolder.folderPath });
+  });
+
   it('rejects a move into an unknown folder', () => {
     const result = validatePlan({ id: 'p1', ops: [{ op: 'move', id: anyBookmark.id, parentId: '9999' }] }, index);
     expect(result.ok).toBe(false);

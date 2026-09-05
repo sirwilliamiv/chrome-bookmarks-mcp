@@ -37,7 +37,7 @@ export function parseBookmarks(json: unknown): BookmarkIndex {
 
   // Returns the recursive bookmark count for this subtree. The folder record is
   // pushed after recursing so totalCount is already known.
-  function walk(node: RawNode, parentId: string | null, path: string): number {
+  function walk(node: RawNode, parentId: string | null, path: string, index: number): number {
     let direct = 0;
     let total = 0;
     const children = Array.isArray(node.children) ? node.children : [];
@@ -57,7 +57,7 @@ export function parseBookmarks(json: unknown): BookmarkIndex {
           dateAdded: chromeTimeToMs(String(child.date_added ?? '0'))
         });
       } else {
-        total += walk(child, String(node.id), `${path}/${child.name}`);
+        total += walk(child, String(node.id), `${path}/${child.name}`, index);
       }
     });
 
@@ -66,6 +66,7 @@ export function parseBookmarks(json: unknown): BookmarkIndex {
       guid: String(node.guid ?? ''),
       title: String(node.name ?? ''),
       parentId,
+      index,
       folderPath: path,
       bookmarkCount: direct,
       totalCount: total
@@ -77,7 +78,7 @@ export function parseBookmarks(json: unknown): BookmarkIndex {
     if (!root || typeof root !== 'object' || !('children' in (root as object))) continue;
     const raw = root as RawNode;
     const label = ROOT_LABELS[key] ?? String(raw.name ?? key);
-    walk(raw, null, `/${label}`);
+    walk(raw, null, `/${label}`, 0);
   }
 
   return {

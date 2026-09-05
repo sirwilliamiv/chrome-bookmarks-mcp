@@ -14,6 +14,7 @@ export interface FolderNode {
   guid: string;
   title: string;
   parentId: string | null;
+  index: number;
   folderPath: string;
   bookmarkCount: number;
   totalCount: number;
