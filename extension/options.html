@@ -69,6 +69,16 @@
       .dot.ok { color: var(--ok); }
       .dot.bad { color: var(--bad); }
       .hint { color: var(--muted); font-size: 13px; margin-top: 6px; }
+      .row { display: flex; gap: 8px; align-items: stretch; }
+      .row input { flex: 1; }
+      button.secondary {
+        margin-top: 0;
+        padding: 0 14px;
+        color: var(--fg);
+        background: var(--field);
+        border: 1px solid var(--border);
+      }
+      code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
     </style>
   </head>
   <body>
@@ -76,8 +86,14 @@
     <p class="sub">Connects this browser to the local MCP server so Claude can reorganize your bookmarks.</p>
 
     <label for="token">Pairing token</label>
-    <input id="token" type="text" spellcheck="false" placeholder="32 hex characters" />
-    <p class="hint">The server prints this on startup. It also lives in ~/.chrome-bookmarks-mcp/token</p>
+    <div class="row">
+      <input id="token" type="text" spellcheck="false" placeholder="32 hex characters" />
+      <button id="paste" type="button" class="secondary">Paste</button>
+    </div>
+    <p class="hint">
+      The server prints this on startup. It also lives at
+      <code>~/.chrome-bookmarks-mcp/token</code> (or <code>$CHROME_BOOKMARKS_MCP_HOME/token</code>).
+    </p>
 
     <label for="port">Port</label>
     <input id="port" type="number" placeholder="45732" />

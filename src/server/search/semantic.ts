@@ -49,7 +49,17 @@ async function getExtractor(): Promise<Extractor> {
   if (!extractorPromise) {
     extractorPromise = (async () => {
       const { pipeline } = await import('@huggingface/transformers');
-      const pipe = await pipeline('feature-extraction', MODEL);
+      // The first run downloads ~25MB. Say so, or it looks like a hang.
+      const announced = new Set<string>();
+      const pipe = await pipeline('feature-extraction', MODEL, {
+        progress_callback: (info: { status?: string; file?: string }) => {
+          if (info.status === 'initiate' && info.file && !announced.has(info.file)) {
+            announced.add(info.file);
+            console.error(`[semantic] downloading ${MODEL} ${info.file}`);
+          }
+          if (info.status === 'ready') console.error(`[semantic] model ready`);
+        }
+      });
       return async (texts: string[]) => {
         const out = await pipe(texts, { pooling: 'mean', normalize: true });
         return out.tolist() as number[][];

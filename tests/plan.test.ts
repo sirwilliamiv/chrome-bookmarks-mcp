@@ -46,6 +46,34 @@ describe('validatePlan', () => {
     expect(rows[0]).toMatchObject({ kind: 'move', title: 'Dev', from: parentFolder.folderPath });
   });
 
+  it('accepts a folder rename and inverts it, but rejects a folder url change', () => {
+    const rename: Plan = { id: 'p1', ops: [{ op: 'update', id: devFolder.id, title: 'Development' }] };
+    expect(validatePlan(rename, index).ok).toBe(true);
+    expect(inverseOps(rename, index)).toEqual([{ op: 'update', id: devFolder.id, title: 'Dev' }]);
+    expect(planToRows(rename, index)[0]).toMatchObject({ kind: 'update', title: 'Dev' });
+
+    const badUrl = validatePlan({ id: 'p1', ops: [{ op: 'update', id: devFolder.id, url: 'https://x' }] }, index);
+    expect(badUrl.ok).toBe(false);
+  });
+
+  it('accepts a soft delete of a folder but not a hard one', () => {
+    expect(validatePlan({ id: 'p1', ops: [{ op: 'delete', id: devFolder.id }] }, index).ok).toBe(true);
+    expect(planToRows({ id: 'p1', ops: [{ op: 'delete', id: devFolder.id }] }, index)[0]).toMatchObject({
+      kind: 'delete',
+      title: 'Dev'
+    });
+    const hard = validatePlan({ id: 'p1', ops: [{ op: 'delete', id: devFolder.id, hard: true }] }, index);
+    expect(hard.ok).toBe(false);
+    if (!hard.ok) expect(hard.errors.join(' ')).toContain('hard delete');
+  });
+
+  it('never lets a root folder move or be deleted', () => {
+    const root = index.folders.find(f => f.parentId === null)!;
+    const result = validatePlan({ id: 'p1', ops: [{ op: 'delete', id: root.id }] }, index);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors.join(' ')).toContain('root folder');
+  });
+
   it('rejects a move into an unknown folder', () => {
     const result = validatePlan({ id: 'p1', ops: [{ op: 'move', id: anyBookmark.id, parentId: '9999' }] }, index);
     expect(result.ok).toBe(false);

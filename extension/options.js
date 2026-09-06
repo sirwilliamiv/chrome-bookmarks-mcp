@@ -1,6 +1,7 @@
 const tokenField = document.getElementById('token');
 const portField = document.getElementById('port');
 const saveButton = document.getElementById('save');
+const pasteButton = document.getElementById('paste');
 const dot = document.getElementById('dot');
 const detail = document.getElementById('detail');
 
@@ -24,6 +25,20 @@ saveButton.addEventListener('click', async () => {
     port: Number(portField.value) || 45732
   });
   detail.textContent = 'Saved. Reconnecting.';
+});
+
+pasteButton.addEventListener('click', async () => {
+  try {
+    const text = (await navigator.clipboard.readText()).trim();
+    if (!/^[0-9a-f]{32}$/i.test(text)) {
+      detail.textContent = 'Clipboard does not hold a 32 character hex token.';
+      return;
+    }
+    tokenField.value = text;
+    detail.textContent = 'Pasted. Click Save and reconnect.';
+  } catch {
+    detail.textContent = 'Clipboard read was blocked. Paste into the field manually.';
+  }
 });
 
 chrome.storage.onChanged.addListener(changes => {

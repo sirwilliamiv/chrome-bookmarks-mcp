@@ -3,3 +3,5 @@ dist/
 views/dist/
 *.log
 .DS_Store
+# internal planning notes, not part of the project
+docs/superpowers/

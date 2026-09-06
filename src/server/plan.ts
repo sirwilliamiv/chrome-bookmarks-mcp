@@ -88,14 +88,15 @@ export function validatePlan(plan: Plan, index: BookmarkIndex): ValidationResult
     }
   };
 
-  const checkBookmark = (id: string, at: number) => {
-    if (!index.byId.has(id)) errors.push(`op ${at}: bookmark ${id} does not exist`);
-  };
-
-  // Moves may target a folder as well as a bookmark; Chrome moves either.
-  const checkMovable = (id: string, at: number) => {
-    if (!index.byId.has(id) && !index.folderById.has(id)) {
+  // Moves, renames and soft deletes may target a folder as well as a bookmark.
+  // Roots (the bar, Other bookmarks, Mobile) are never valid targets.
+  const checkNode = (id: string, at: number, verb: string) => {
+    if (index.byId.has(id)) return;
+    const folder = index.folderById.get(id);
+    if (!folder) {
       errors.push(`op ${at}: bookmark or folder ${id} does not exist`);
+    } else if (folder.parentId === null) {
+      errors.push(`op ${at}: cannot ${verb} root folder "${folder.title}"`);
     }
   };
 
@@ -108,17 +109,23 @@ export function validatePlan(plan: Plan, index: BookmarkIndex): ValidationResult
         created.add(op.tempId);
         break;
       case 'move':
-        checkMovable(op.id, at);
+        checkNode(op.id, at, 'move');
         checkParent(op.parentId, at);
         break;
       case 'update':
-        checkBookmark(op.id, at);
+        checkNode(op.id, at, 'update');
         if (op.title === undefined && op.url === undefined) {
           errors.push(`op ${at}: update sets neither title nor url`);
         }
+        if (op.url !== undefined && index.folderById.has(op.id)) {
+          errors.push(`op ${at}: folder ${op.id} has no url to update`);
+        }
         break;
       case 'delete':
-        checkBookmark(op.id, at);
+        checkNode(op.id, at, 'delete');
+        if (op.hard && index.folderById.has(op.id)) {
+          errors.push(`op ${at}: hard delete of folder ${op.id} is not supported, use a soft delete`);
+        }
         break;
     }
   });
@@ -146,11 +153,11 @@ export function inverseOps(plan: Plan, index: BookmarkIndex): Op[] {
         break;
       }
       case 'update': {
-        const before = index.byId.get(op.id);
+        const before = index.byId.get(op.id) ?? index.folderById.get(op.id);
         if (!before) break;
         const restore: Op = { op: 'update', id: op.id };
         if (op.title !== undefined) restore.title = before.title;
-        if (op.url !== undefined) restore.url = before.url;
+        if (op.url !== undefined && 'url' in before) restore.url = before.url;
         inverse.push(restore);
         break;
       }
@@ -230,7 +237,7 @@ export function planToRows(plan: Plan, index: BookmarkIndex): PlanRow[] {
         break;
       }
       case 'update': {
-        const before = index.byId.get(op.id);
+        const before = index.byId.get(op.id) ?? index.folderById.get(op.id);
         const changes: string[] = [];
         if (op.title !== undefined) changes.push(`title to "${op.title}"`);
         if (op.url !== undefined) changes.push(`url to ${op.url}`);
@@ -244,15 +251,18 @@ export function planToRows(plan: Plan, index: BookmarkIndex): PlanRow[] {
       }
       case 'delete': {
         const before = index.byId.get(op.id);
+        const folder = before ? undefined : index.folderById.get(op.id);
         const row: PlanRow = {
           kind: 'delete',
           id: op.id,
-          title: before?.title ?? op.id,
+          title: before?.title ?? folder?.title ?? op.id,
           detail: op.hard ? 'permanent delete' : 'move to _MCP Trash'
         };
         if (before) {
           row.url = before.url;
           row.from = before.folderPath;
+        } else if (folder && folder.parentId !== null) {
+          row.from = index.folderById.get(folder.parentId)?.folderPath ?? folder.parentId;
         }
         rows.push(row);
         break;

@@ -3,7 +3,7 @@
   "name": "chrome-bookmarks-mcp bridge",
   "version": "0.1.0",
   "description": "Lets the local chrome-bookmarks-mcp server read and reorganize your bookmarks.",
-  "permissions": ["bookmarks", "storage", "alarms"],
+  "permissions": ["bookmarks", "storage", "alarms", "clipboardRead"],
   "background": {
     "service_worker": "service-worker.js",
     "type": "module"
