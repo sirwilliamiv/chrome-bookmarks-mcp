@@ -11,7 +11,7 @@
   "scripts": {
     "build": "pnpm build:ci && node scripts/daemon.mjs restart-if-running",
     "build:ci": "pnpm build:views && tsc -p tsconfig.json",
-    "setup": "node scripts/setup.mjs",
+    "register": "node scripts/register.mjs",
     "warm": "node scripts/warm.mjs",
     "build:views": "node views/build.mjs",
     "test": "vitest run",

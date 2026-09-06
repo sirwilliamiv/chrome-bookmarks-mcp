@@ -21,7 +21,7 @@ const desktopConfig = {
 }[process.platform] ?? '<claude desktop config path>';
 
 if (!existsSync(proxy)) {
-  console.error(`dist/ is missing. Run "pnpm build" first, then "pnpm setup" again.\n`);
+  console.error(`dist/ is missing. Run "pnpm build" first, then "pnpm register" again.\n`);
 }
 
 const q = s => JSON.stringify(s);

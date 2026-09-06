@@ -36,7 +36,7 @@ pnpm build
 ### 2. Register the server
 
 ```bash
-pnpm setup
+pnpm register
 ```
 
 That prints the exact `claude mcp add` command and the Claude Desktop JSON for
@@ -60,7 +60,7 @@ Writes need it. Reads do not.
    Paste if it is on your clipboard.
 
 The token is printed when the server starts, and lives at
-`~/.chrome-bookmarks-mcp/token`. `pnpm setup` prints the full path.
+`~/.chrome-bookmarks-mcp/token`. `pnpm register` prints the full path.
 
 Ask Claude to run `bridge_status` to confirm the connection.
 
@@ -182,7 +182,7 @@ src/server/      MCP server: parser, search, plans, bridge, tools
 src/shared/      Protocol types shared with the extension
 extension/       MV3 companion extension, applies op batches via chrome.bookmarks
 views/src/       MCP App views, bundled to single self-contained HTML files
-scripts/         setup, warm, smoke tests, daemon control
+scripts/         register, warm, smoke tests, daemon control
 ```
 
 Views render under `default-src 'none'` with only `'self'` and `'unsafe-inline'`

@@ -57,7 +57,7 @@ src/server/proxy.ts            per client stdio front end
 src/shared/protocol.ts         types shared with the extension
 extension/                     MV3 companion, apply-ops.js is pure and unit tested
 views/src/                     MCP App views, bundled to single self-contained HTML files
-scripts/                       setup, warm, smoke tests, daemon control
+scripts/                       register, warm, smoke tests, daemon control
 ```
 
 ## Plans
