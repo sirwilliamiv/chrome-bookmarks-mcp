@@ -4,10 +4,17 @@
   "private": true,
   "type": "module",
   "description": "MCP server for searching and reorganizing Chrome bookmarks",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "build": "pnpm build:views && tsc -p tsconfig.json",
+    "build": "pnpm build:ci && node scripts/daemon.mjs restart-if-running",
+    "build:ci": "pnpm build:views && tsc -p tsconfig.json",
+    "register": "node scripts/register.mjs",
+    "warm": "node scripts/warm.mjs",
     "build:views": "node views/build.mjs",
-    "test": "vitest run",
+    "test": "pnpm build:views && vitest run",
     "typecheck": "tsc --noEmit && tsc --noEmit -p views/tsconfig.json",
     "smoke": "node scripts/smoke.mjs",
     "smoke:shared": "node scripts/smoke-shared.mjs",

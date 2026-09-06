@@ -1,5 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { writeFileSync, unlinkSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createMcpHandler } from '@modelcontextprotocol/server';
 import { Bridge, getOrCreateToken } from './bridge.js';
 import { createBookmarksServer, createDeps } from './core.js';
@@ -133,6 +135,18 @@ http.listen(httpPort, '127.0.0.1', () => {
       `[daemon] bridge on 127.0.0.1:${bridgePort}\n` +
       `[daemon] pairing token: ${token}`
   );
+
+  // Reads work without the extension, so a missing pairing is easy to miss
+  // until the first write fails. Nudge once if nothing has dialed in.
+  const extensionDir = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'extension');
+  setTimeout(() => {
+    if (bridge.isConnected()) return;
+    console.error(
+      `[daemon] no extension connected. Writes need it:\n` +
+        `[daemon]   chrome://extensions > Developer mode > Load unpacked > ${extensionDir}\n` +
+        `[daemon]   then open the extension's options page and paste the token above.`
+    );
+  }, 10_000).unref();
 });
 
 http.on('error', err => {

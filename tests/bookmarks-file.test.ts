@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { parseBookmarks, chromeTimeToMs } from '../src/server/bookmarks-file.js';
+import { parseBookmarks, chromeTimeToMs, defaultBookmarksPath } from '../src/server/bookmarks-file.js';
 
 const fixture = JSON.parse(readFileSync(new URL('./fixtures/Bookmarks.json', import.meta.url), 'utf8'));
 
@@ -55,5 +55,40 @@ describe('chromeTimeToMs', () => {
 
   it('returns 0 for an empty value', () => {
     expect(chromeTimeToMs('')).toBe(0);
+  });
+});
+
+describe('defaultBookmarksPath', () => {
+  const posix = (p: string) => p.replaceAll('\\', '/');
+
+  it('finds Chrome on macOS', () => {
+    expect(posix(defaultBookmarksPath({ platform: 'darwin', home: '/Users/x', browser: 'chrome', profile: 'Default' }))).toBe(
+      '/Users/x/Library/Application Support/Google/Chrome/Default/Bookmarks'
+    );
+  });
+
+  it('finds Chrome on Windows under LOCALAPPDATA', () => {
+    expect(
+      posix(defaultBookmarksPath({ platform: 'win32', home: 'C:/Users/x', localAppData: 'C:/Users/x/AppData/Local', browser: 'chrome', profile: 'Default' }))
+    ).toBe('C:/Users/x/AppData/Local/Google/Chrome/User Data/Default/Bookmarks');
+  });
+
+  it('finds Chrome on Linux under XDG config', () => {
+    expect(posix(defaultBookmarksPath({ platform: 'linux', home: '/home/x', configHome: '/home/x/.config', browser: 'chrome', profile: 'Default' }))).toBe(
+      '/home/x/.config/google-chrome/Default/Bookmarks'
+    );
+  });
+
+  it('supports other Chromium browsers and named profiles', () => {
+    expect(posix(defaultBookmarksPath({ platform: 'darwin', home: '/Users/x', browser: 'brave', profile: 'Profile 2' }))).toBe(
+      '/Users/x/Library/Application Support/BraveSoftware/Brave-Browser/Profile 2/Bookmarks'
+    );
+    expect(posix(defaultBookmarksPath({ platform: 'linux', home: '/home/x', configHome: '/home/x/.config', browser: 'edge', profile: 'Default' }))).toBe(
+      '/home/x/.config/microsoft-edge/Default/Bookmarks'
+    );
+  });
+
+  it('rejects an unknown browser with a helpful message', () => {
+    expect(() => defaultBookmarksPath({ platform: 'darwin', home: '/Users/x', browser: 'netscape' })).toThrow(/CHROME_BOOKMARKS_BROWSER/);
   });
 });

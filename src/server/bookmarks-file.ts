@@ -3,10 +3,63 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import type { BookmarkIndex, BookmarkNode, FolderNode } from './types.js';
 
-export const DEFAULT_BOOKMARKS_PATH = join(
-  homedir(),
-  'Library/Application Support/Google/Chrome/Default/Bookmarks'
-);
+export const BROWSERS = ['chrome', 'chromium', 'brave', 'edge', 'vivaldi'] as const;
+export type Browser = (typeof BROWSERS)[number];
+
+/** Where each Chromium fork keeps its user data, per platform. */
+const VENDOR_DIRS: Record<Browser, { darwin: string; win32: string; linux: string }> = {
+  chrome: { darwin: 'Google/Chrome', win32: 'Google/Chrome/User Data', linux: 'google-chrome' },
+  chromium: { darwin: 'Chromium', win32: 'Chromium/User Data', linux: 'chromium' },
+  brave: {
+    darwin: 'BraveSoftware/Brave-Browser',
+    win32: 'BraveSoftware/Brave-Browser/User Data',
+    linux: 'BraveSoftware/Brave-Browser'
+  },
+  edge: { darwin: 'Microsoft Edge', win32: 'Microsoft/Edge/User Data', linux: 'microsoft-edge' },
+  vivaldi: { darwin: 'Vivaldi', win32: 'Vivaldi/User Data', linux: 'vivaldi' }
+};
+
+export interface BookmarksPathOptions {
+  platform?: NodeJS.Platform;
+  home?: string;
+  /** %LOCALAPPDATA% on Windows */
+  localAppData?: string;
+  /** $XDG_CONFIG_HOME on Linux */
+  configHome?: string;
+  browser?: string;
+  profile?: string;
+}
+
+/**
+ * The Bookmarks file for a browser and profile on this platform. Every part is
+ * overridable so the mapping can be unit tested without a real browser.
+ */
+export function defaultBookmarksPath(opts: BookmarksPathOptions = {}): string {
+  const platform = opts.platform ?? process.platform;
+  const home = opts.home ?? homedir();
+  const browser = (opts.browser ?? process.env.CHROME_BOOKMARKS_BROWSER ?? 'chrome').toLowerCase();
+  const profile = opts.profile ?? process.env.CHROME_PROFILE ?? 'Default';
+
+  const vendor = VENDOR_DIRS[browser as Browser];
+  if (!vendor) {
+    throw new Error(
+      `Unknown browser "${browser}". CHROME_BOOKMARKS_BROWSER must be one of ${BROWSERS.join(', ')}, ` +
+        `or set CHROME_BOOKMARKS_PATH to the Bookmarks file directly.`
+    );
+  }
+
+  let base: string;
+  if (platform === 'darwin') {
+    base = join(home, 'Library/Application Support', vendor.darwin);
+  } else if (platform === 'win32') {
+    const localAppData = opts.localAppData ?? process.env.LOCALAPPDATA ?? join(home, 'AppData/Local');
+    base = join(localAppData, vendor.win32);
+  } else {
+    const configHome = opts.configHome ?? process.env.XDG_CONFIG_HOME ?? join(home, '.config');
+    base = join(configHome, vendor.linux);
+  }
+  return join(base, profile, 'Bookmarks');
+}
 
 /** Chrome stores timestamps as microseconds since 1601-01-01 UTC. */
 export function chromeTimeToMs(v: string): number {
@@ -96,7 +149,7 @@ export class BookmarksSource {
   private cachedMtime = 0;
 
   constructor(
-    readonly path: string = process.env.CHROME_BOOKMARKS_PATH ?? DEFAULT_BOOKMARKS_PATH
+    readonly path: string = process.env.CHROME_BOOKMARKS_PATH ?? defaultBookmarksPath()
   ) {}
 
   async get(): Promise<BookmarkIndex> {
@@ -105,7 +158,8 @@ export class BookmarksSource {
       mtime = (await stat(this.path)).mtimeMs;
     } catch {
       throw new Error(
-        `Chrome bookmarks file not found at ${this.path}. Set CHROME_BOOKMARKS_PATH to override.`
+        `Bookmarks file not found at ${this.path}. Set CHROME_BOOKMARKS_BROWSER (${BROWSERS.join('|')}), ` +
+          `CHROME_PROFILE, or CHROME_BOOKMARKS_PATH to point at the right file.`
       );
     }
     if (this.cached && mtime === this.cachedMtime) return this.cached;

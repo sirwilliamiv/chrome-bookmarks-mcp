@@ -108,7 +108,7 @@ try {
   console.log(`  both see the same extension state: ${connA} / ${connB}`);
   if (connA !== connB) throw new Error('bridge state differs between clients');
 
-  const health = await (await fetch('http://127.0.0.1:45731/healthz')).json();
+  const health = await (await fetch(`http://127.0.0.1:${Number(process.env.CHROME_BOOKMARKS_MCP_HTTP_PORT) || 45731}/healthz`)).json();
   console.log(`  one daemon serving both, pid ${health.pid}`);
 
   console.log('\nshared instance verified');

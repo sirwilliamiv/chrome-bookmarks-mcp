@@ -69,11 +69,20 @@ async function stop() {
   }
   try {
     process.kill(pid, 'SIGTERM');
-    console.log(`stopped pid ${pid}`);
   } catch (err) {
     console.error(`could not stop pid ${pid}: ${err.message}`);
     process.exit(1);
   }
+  // shutdown drains open connections first, so wait for the port to go dark
+  for (let i = 0; i < 50; i++) {
+    if (!(await health())) {
+      console.log(`stopped pid ${pid}`);
+      return;
+    }
+    await new Promise(r => setTimeout(r, 100));
+  }
+  console.error(`pid ${pid} is still answering after 5s`);
+  process.exit(1);
 }
 
 async function status() {
@@ -95,12 +104,19 @@ else if (command === 'start') await start();
 else if (command === 'stop') await stop();
 else if (command === 'restart') {
   await stop();
-  await new Promise(r => setTimeout(r, 800));
   await start();
+} else if (command === 'restart-if-running') {
+  // used by pnpm build so a rebuilt daemon replaces the stale one
+  if (await health()) {
+    await stop();
+    await start();
+  } else {
+    console.log('daemon not running, nothing to restart');
+  }
 } else if (command === 'logs') {
   if (!existsSync(logFile)) console.log(`no log yet at ${logFile}`);
   else console.log(readFileSync(logFile, 'utf8').split('\n').slice(-40).join('\n'));
 } else {
-  console.error('usage: daemon.mjs [status|start|stop|restart|logs]');
+  console.error('usage: daemon.mjs [status|start|stop|restart|restart-if-running|logs]');
   process.exit(1);
 }
